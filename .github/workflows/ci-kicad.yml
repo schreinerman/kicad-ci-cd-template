@@ -32,7 +32,7 @@ jobs:
           sudo chmod +x ./build.sh
         shell: bash
       - name: build
-        run: ./build.sh 
+        run: bash ./build.sh 
       - uses: actions/upload-artifact@v4
         with:
           name: ${GITHUB_REPOSITORY#*/}
