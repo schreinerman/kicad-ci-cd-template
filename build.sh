@@ -187,7 +187,10 @@ prepare() {
   mkdir -p ./${ARTIFACTS_DIR}/$GERBER_DIR || true
   chmod -R 777 ./${ARTIFACTS_DIR}/$GERBER_DIR || true
   if [ $(command -v apt-get) ]; then
-     sudo apt update && sudo apt install python3-pip virtualenv -yq
+     if [ ! $(command -v python3) ] || [ ! $(command -v virtualenv) ]; then
+         sudo apt update && sudo apt install python3-pip virtualenv -yq
+     fi
+
      if [ ! $(command -v kicad-cli) ]; then
          sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
          sudo apt update
@@ -195,28 +198,33 @@ prepare() {
          KICAD_CLI=$(which kicad-cli)
      fi
   fi
-  virtualenv -p python3 .python3env
-  source .python3env/bin/activate
-  pip3 install --upgrade pip
-  pip3 install turbocase
-  deactivate
+  if [ ! -f ".python3env/bin/activate" ]; then
+    virtualenv -p python3 .python3env
+    source .python3env/bin/activate
+    pip3 install --upgrade pip
+    pip3 install turbocase
+    deactivate
+  fi
   return 0
 }
 
 schematic() {
     echo "Working directory: $(pwd)"
+    mkdir -p ./${ARTIFACTS_DIR}
     print_command "$KICAD_CLI sch export pdf -o ./${ARTIFACTS_DIR}/${SCHEMATIC_FILE} ${KICAD_SCH_FILE}"
     $KICAD_CLI sch export pdf -o ./${ARTIFACTS_DIR}/${SCHEMATIC_FILE} ${KICAD_SCH_FILE}
 }
 
 bom() {
     echo "Working directory: $(pwd)"
+    mkdir -p ./${ARTIFACTS_DIR}
     print_command "$KICAD_CLI sch export bom -o ./${ARTIFACTS_DIR}/${BOM_FILE} ${KICAD_SCH_FILE}"
     $KICAD_CLI sch export bom -o ./${ARTIFACTS_DIR}/${BOM_FILE} ${KICAD_SCH_FILE}
 }
 
 gerber() {
     echo "Working directory: $(pwd)"
+    mkdir -p ./${ARTIFACTS_DIR}
     print_command "pcb drc --severity-error --exit-code-violations ${KICAD_PCB_FILE}"
     $KICAD_CLI pcb drc --severity-error --exit-code-violations ${KICAD_PCB_FILE}
     res="$?"
@@ -231,6 +239,7 @@ gerber() {
 
 housing() {
     echo "Working directory: $(pwd)"
+    mkdir -p ./${ARTIFACTS_DIR}
     source .python3env/bin/activate
     print_command "python3 -m turbocase ${KICAD_PCB_FILE} ./${ARTIFACTS_DIR}/${CASE_FILE}"
     python3 -m turbocase ${KICAD_PCB_FILE} ./${ARTIFACTS_DIR}/${CASE_FILE}
@@ -238,9 +247,13 @@ housing() {
 }
 
 cad() {
+    mkdir -p ./${ARTIFACTS_DIR}
     $KICAD_CLI pcb export glb --output  ./${ARTIFACTS_DIR}/${CAD_FILE_GLB} ${KICAD_PCB_FILE}  
     $KICAD_CLI pcb export step --output ./${ARTIFACTS_DIR}/${CAD_FILE_STEP} ${KICAD_PCB_FILE}  
     $KICAD_CLI pcb export vrml --output ./${ARTIFACTS_DIR}/${CAD_FILE_VRML} ${KICAD_PCB_FILE} 
+    $KICAD_CLI pcb render --quality high --zoom 0.6 --rotate 0,0,0 --output ./${ARTIFACTS_DIR}/${CAD_FILE}-front.jpg ${KICAD_PCB_FILE}
+    $KICAD_CLI pcb render --quality high --zoom 0.6  --rotate 180,0,0 --output ./${ARTIFACTS_DIR}/${CAD_FILE}-back.jpg ${KICAD_PCB_FILE}
+    $KICAD_CLI pcb render --quality high --zoom 0.6  --rotate 300,5,20 --perspective --output ./${ARTIFACTS_DIR}/${CAD_FILE}-preview.jpg ${KICAD_PCB_FILE}
 }
 
 case $1 in
