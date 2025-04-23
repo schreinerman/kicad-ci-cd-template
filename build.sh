@@ -192,6 +192,7 @@ prepare() {
          sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
          sudo apt update
          sudo apt install --install-recommends kicad -yq
+         KICAD_CLI=$(which kicad-cli)
      fi
   fi
   virtualenv -p python3 .python3env
