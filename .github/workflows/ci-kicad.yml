@@ -29,8 +29,8 @@ jobs:
           sudo chmod +x ./build.sh
         shell: bash
       - name: make
-          run: ./build.sh 
-          shell: bash
+        run: ./build.sh 
+        shell: bash
       - uses: actions/upload-artifact@v3
         with:
           name: ${GITHUB_REPOSITORY#*/}
