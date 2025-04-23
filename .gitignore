@@ -1,0 +1,10 @@
+.python3env
+.python3env/*
+output/*
+202*-*
+203*-*
+204*-*
+205*-*
+*.lck
+*-backups/*
+fp-info-cache

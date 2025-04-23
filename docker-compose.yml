@@ -1,0 +1,7 @@
+services:
+  kicad:
+    image: kicad/kicad:9.0
+    volumes:
+      - ./:/project
+    working_dir: /project
+    entrypoint: bash build.sh

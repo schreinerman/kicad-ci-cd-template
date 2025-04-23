@@ -1,0 +1,75 @@
+image: kicad/kicad:9.0
+
+stages:
+  - schematic
+  - bom
+  - gerber
+  - housing
+  - production
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  
+
+before_script:
+  - sudo chmod 755 build.sh
+  - ./build.sh prepare
+  - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+
+
+schematic:
+  stage: schematic
+  script:
+    - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+    - ./build.sh schematic
+  artifacts:
+    name: "schematic-${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ./*-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}/*.pdf
+    expire_in: 1 week
+
+bom:
+  stage: bom
+  script:
+    - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+    - ./build.sh bom
+  artifacts:
+    name: "bom-${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ./*-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}/*.csv
+    expire_in: 1 week
+
+gerber:
+  stage: gerber
+  script:
+      - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+      - ./build.sh gerber
+  artifacts:
+    name: "gerber-${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ./*-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}/gerber
+    expire_in: 1 week
+
+housing:
+  stage: housing
+  script:
+     - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+     - ./build.sh housing
+  artifacts:
+    name: "case-${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ./*-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}/*.scad
+    expire_in: 1 week
+
+production:
+  stage: production
+  script:
+    - rm -rf *-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
+    - ./build.sh
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ./*-${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}/*
+    expire_in: 1 week
