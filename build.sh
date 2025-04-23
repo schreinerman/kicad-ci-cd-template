@@ -188,6 +188,11 @@ prepare() {
   chmod -R 777 ./${ARTIFACTS_DIR}/$GERBER_DIR || true
   if [ $(command -v apt-get) ]; then
      sudo apt update && sudo apt install python3-pip virtualenv -yq
+     if [ ! $(command -v kicad-cli) ]; then
+         sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
+         sudo apt update
+         sudo apt install --install-recommends kicad -yq
+     fi
   fi
   virtualenv -p python3 .python3env
   source .python3env/bin/activate
